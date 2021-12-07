@@ -8,6 +8,7 @@ import (
 
 	"github.com/TechBowl-japan/go-stations/db"
 	"github.com/TechBowl-japan/go-stations/handler"
+	"github.com/TechBowl-japan/go-stations/service"
 )
 
 func main() {
@@ -55,6 +56,12 @@ func realMain() error {
 	hh := handler.NewHealthzHandler()
 	mux.Handle("/healthz", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		hh.ServeHTTP(rw, r)
+	}))
+
+	ts := service.NewTODOService(todoDB)
+	th := handler.NewTODOHandler(ts)
+	mux.Handle("/todos", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		th.ServeHTTP(rw, r)
 	}))
 
 	if err := http.ListenAndServe(port, mux); err != nil {

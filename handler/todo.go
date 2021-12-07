@@ -2,6 +2,9 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"log"
+	"net/http"
 
 	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
@@ -21,8 +24,9 @@ func NewTODOHandler(svc *service.TODOService) *TODOHandler {
 
 // Create handles the endpoint that creates the TODO.
 func (h *TODOHandler) Create(ctx context.Context, req *model.CreateTODORequest) (*model.CreateTODOResponse, error) {
-	_, _ = h.svc.CreateTODO(ctx, "", "")
-	return &model.CreateTODOResponse{}, nil
+	tm, _ := h.svc.CreateTODO(ctx, req.Subject, req.Description)
+
+	return &model.CreateTODOResponse{TODO: *tm}, nil
 }
 
 // Read handles the endpoint that reads the TODOs.
@@ -41,4 +45,24 @@ func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) 
 func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) (*model.DeleteTODOResponse, error) {
 	_ = h.svc.DeleteTODO(ctx, nil)
 	return &model.DeleteTODOResponse{}, nil
+}
+
+func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var request model.CreateTODORequest
+	err := decoder.Decode(&request)
+	if err != nil {
+		log.Println(err)
+	}
+
+	response, err := h.Create(r.Context(), &request)
+	if err != nil {
+		log.Println(err)
+	}
+
+	je := json.NewEncoder(w)
+
+	if err := je.Encode(response); err != nil {
+		log.Println(err)
+	}
 }
