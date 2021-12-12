@@ -48,21 +48,31 @@ func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) 
 }
 
 func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	var request model.CreateTODORequest
-	err := decoder.Decode(&request)
-	if err != nil {
-		log.Println(err)
-	}
+	if r.Method == http.MethodPost {
+		decoder := json.NewDecoder(r.Body)
+		var request model.CreateTODORequest
+		err := decoder.Decode(&request)
+		if err != nil {
+			log.Println(err)
+		}
+		if request.Subject == "" {
+			log.Println("Subject not found")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	response, err := h.Create(r.Context(), &request)
-	if err != nil {
-		log.Println(err)
-	}
+		response, err := h.Create(r.Context(), &request)
+		if err != nil {
+			log.Println(err)
+		}
 
-	je := json.NewEncoder(w)
+		je := json.NewEncoder(w)
 
-	if err := je.Encode(response); err != nil {
-		log.Println(err)
+		if err := je.Encode(response); err != nil {
+			log.Println(err)
+		}
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 }

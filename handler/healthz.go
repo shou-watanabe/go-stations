@@ -18,11 +18,16 @@ func NewHealthzHandler() *HealthzHandler {
 
 // ServeHTTP implements http.Handler interface.
 func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	hr := &model.HealthzResponse{Message: "OK"}
+	if r.Method == http.MethodGet {
+		hr := &model.HealthzResponse{Message: "OK"}
 
-	je := json.NewEncoder(w)
+		je := json.NewEncoder(w)
 
-	if err := je.Encode(hr); err != nil {
-		log.Println(err)
+		if err := je.Encode(hr); err != nil {
+			log.Println(err)
+		}
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 }
