@@ -61,6 +61,8 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err := decoder.Decode(&request)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 		if request.Subject == "" {
 			log.Println("Subject not found")
@@ -71,6 +73,8 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response, err := h.Create(r.Context(), &request)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -86,7 +90,9 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var request model.UpdateTODORequest
 		err := decoder.Decode(&request)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			log.Println(err)
+			return
 		}
 		if request.ID == 0 {
 			log.Println("ID not found")
@@ -102,6 +108,8 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response, err := h.Update(r.Context(), &request)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -111,6 +119,8 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if err := je.Encode(response); err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
