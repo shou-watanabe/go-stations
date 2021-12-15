@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -25,7 +26,6 @@ func NewTODOHandler(svc *service.TODOService) *TODOHandler {
 // Create handles the endpoint that creates the TODO.
 func (h *TODOHandler) Create(ctx context.Context, req *model.CreateTODORequest) (*model.CreateTODOResponse, error) {
 	tm, _ := h.svc.CreateTODO(ctx, req.Subject, req.Description)
-
 	return &model.CreateTODOResponse{TODO: tm}, nil
 }
 
@@ -37,7 +37,10 @@ func (h *TODOHandler) Read(ctx context.Context, req *model.ReadTODORequest) (*mo
 
 // Update handles the endpoint that updates the TODO.
 func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) (*model.UpdateTODOResponse, error) {
-	_, _ = h.svc.UpdateTODO(ctx, 0, "", "")
+	if req.ID == 0 || req.Subject == "" {
+		return nil, errors.New("not found")
+	}
+	_, _ = h.svc.UpdateTODO(ctx, int64(req.ID), req.Subject, req.Description)
 	return &model.UpdateTODOResponse{}, nil
 }
 
