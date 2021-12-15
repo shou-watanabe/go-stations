@@ -51,15 +51,6 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 		return nil, err
 	}
 
-	// stmt, err = s.db.Prepare(confirm)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// err = stmt.QueryRow(t.ID).Scan(&t.Subject, &t.Description, &t.CreatedAt, &t.UpdatedAt)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	return t, nil
 }
 
