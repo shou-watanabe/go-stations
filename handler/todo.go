@@ -40,8 +40,12 @@ func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) 
 	if req.ID == 0 || req.Subject == "" {
 		return nil, errors.New("not found")
 	}
-	_, _ = h.svc.UpdateTODO(ctx, int64(req.ID), req.Subject, req.Description)
-	return &model.UpdateTODOResponse{}, nil
+	tm, err := h.svc.UpdateTODO(ctx, int64(req.ID), req.Subject, req.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UpdateTODOResponse{TODO: tm}, nil
 }
 
 // Delete handles the endpoint that deletes the TODOs.
