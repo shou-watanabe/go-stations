@@ -51,7 +51,8 @@ func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) 
 }
 
 func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
+	switch r.Method {
+	case http.MethodPost:
 		decoder := json.NewDecoder(r.Body)
 		var request model.CreateTODORequest
 		err := decoder.Decode(&request)
@@ -77,8 +78,9 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err := je.Encode(response); err != nil {
 			log.Println(err)
 		}
-	} else {
+	case http.MethodPut:
+		//
+	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
 	}
 }
