@@ -26,7 +26,7 @@ func NewTODOHandler(svc *service.TODOService) *TODOHandler {
 func (h *TODOHandler) Create(ctx context.Context, req *model.CreateTODORequest) (*model.CreateTODOResponse, error) {
 	tm, _ := h.svc.CreateTODO(ctx, req.Subject, req.Description)
 
-	return &model.CreateTODOResponse{TODO: *tm}, nil
+	return &model.CreateTODOResponse{TODO: tm}, nil
 }
 
 // Read handles the endpoint that reads the TODOs.
@@ -66,6 +66,7 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
 		je := json.NewEncoder(w)
