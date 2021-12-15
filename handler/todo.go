@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 
@@ -37,9 +36,6 @@ func (h *TODOHandler) Read(ctx context.Context, req *model.ReadTODORequest) (*mo
 
 // Update handles the endpoint that updates the TODO.
 func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) (*model.UpdateTODOResponse, error) {
-	if req.ID == 0 || req.Subject == "" {
-		return nil, errors.New("not found")
-	}
 	tm, err := h.svc.UpdateTODO(ctx, int64(req.ID), req.Subject, req.Description)
 	if err != nil {
 		return nil, err
@@ -83,7 +79,36 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 	case http.MethodPut:
-		//
+		decoder := json.NewDecoder(r.Body)
+		var request model.UpdateTODORequest
+		err := decoder.Decode(&request)
+		if err != nil {
+			log.Println(err)
+		}
+		if request.ID == 0 {
+			log.Println("ID not found")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if request.Subject == "" {
+			log.Println("Subject not found")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		response, err := h.Update(r.Context(), &request)
+		if err != nil {
+			log.Println(err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		je := json.NewEncoder(w)
+
+		if err := je.Encode(response); err != nil {
+			log.Println(err)
+		}
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
