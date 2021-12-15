@@ -92,7 +92,7 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 		return nil, err
 	}
 
-	um := &model.TODO{}
+	t := &model.TODO{ID: int(id)}
 
 	stmt, err = s.db.PrepareContext(ctx, confirm)
 	if err != nil {
@@ -100,14 +100,11 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 	}
 
 	row := stmt.QueryRowContext(ctx, id)
-	if row.Err() != nil {
+	if err = row.Scan(&t.Subject, &t.Description, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, &model.ErrNotFound{}
 	}
-	if err = row.Scan(&um.ID, &um.Subject, &um.Description); err != nil {
-		return nil, err
-	}
 
-	return um, nil
+	return t, nil
 }
 
 // DeleteTODO deletes TODOs on DB by ids.
