@@ -66,6 +66,8 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 
+		w.WriteHeader(http.StatusOK)
+
 		je := json.NewEncoder(w)
 
 		if err := je.Encode(response); err != nil {
