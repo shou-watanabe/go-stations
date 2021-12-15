@@ -40,7 +40,7 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 		return nil, err
 	}
 
-	t := &model.TODO{ID: int(id)}
+	t := &model.TODO{ID: id}
 
 	stmt, err = s.db.PrepareContext(ctx, confirm)
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 		return nil, err
 	}
 
-	t := &model.TODO{ID: int(id)}
+	t := &model.TODO{ID: id}
 
 	stmt, err = s.db.PrepareContext(ctx, confirm)
 	if err != nil {
