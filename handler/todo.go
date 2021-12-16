@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
@@ -33,8 +34,11 @@ func (h *TODOHandler) Create(ctx context.Context, req *model.CreateTODORequest) 
 
 // Read handles the endpoint that reads the TODOs.
 func (h *TODOHandler) Read(ctx context.Context, req *model.ReadTODORequest) (*model.ReadTODOResponse, error) {
-	_, _ = h.svc.ReadTODO(ctx, 0, 0)
-	return &model.ReadTODOResponse{}, nil
+	todos, err := h.svc.ReadTODO(ctx, req.PrevID, req.Size)
+	if err != nil {
+		return nil, err
+	}
+	return &model.ReadTODOResponse{TODOS: todos}, nil
 }
 
 // Update handles the endpoint that updates the TODO.
@@ -55,6 +59,48 @@ func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) 
 
 func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case http.MethodGet:
+		size := r.URL.Query().Get("size")
+		if size == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		size64, err := strconv.ParseInt(size, 10, 64)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		prevId := r.URL.Query().Get("prev_id")
+		prevId64 := int64(0)
+		if prevId != "" {
+			prevId64, err = strconv.ParseInt(prevId, 10, 64)
+		}
+
+		if err != nil {
+			return
+		}
+
+		request := &model.ReadTODORequest{Size: size64, PrevID: prevId64}
+
+		response, err := h.Read(r.Context(), request)
+
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		je := json.NewEncoder(w)
+
+		if err := je.Encode(response); err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+
 	case http.MethodPost:
 		decoder := json.NewDecoder(r.Body)
 		var request model.CreateTODORequest
@@ -84,7 +130,9 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if err := je.Encode(response); err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
 		}
+
 	case http.MethodPut:
 		decoder := json.NewDecoder(r.Body)
 		var request model.UpdateTODORequest
