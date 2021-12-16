@@ -38,7 +38,7 @@ func (h *TODOHandler) Read(ctx context.Context, req *model.ReadTODORequest) (*mo
 	if err != nil {
 		return nil, err
 	}
-	return &model.ReadTODOResponse{TODOS: todos}, nil
+	return &model.ReadTODOResponse{TODOs: todos}, nil
 }
 
 // Update handles the endpoint that updates the TODO.
