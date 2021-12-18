@@ -6,6 +6,6 @@ type ErrNotFound struct {
 	//
 }
 
-func (e *ErrNotFound) Error() string {
+func (e ErrNotFound) Error() string {
 	return fmt.Sprintln("Not Found")
 }

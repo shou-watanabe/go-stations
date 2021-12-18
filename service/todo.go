@@ -3,7 +3,10 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/TechBowl-japan/go-stations/model"
 )
@@ -141,19 +144,36 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 // DeleteTODO deletes TODOs on DB by ids.
 func (s *TODOService) DeleteTODO(ctx context.Context, ids []int64) error {
 	const deleteFmt = `DELETE FROM todos WHERE id IN (?%s)`
+	if len(ids) == 0 {
+		return errors.New("id not found")
+	}
+	delete := fmt.Sprintf(deleteFmt, strings.Repeat(", ?", len(ids)-1))
 
-	stmt, err := s.db.PrepareContext(ctx, deleteFmt)
+	stmt, err := s.db.PrepareContext(ctx, delete)
 	if err != nil {
-		log.Println("ここでエラー")
 		return err
 	}
 
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, ids)
+	args := []interface{}{}
+	for _, id := range ids {
+		args = append(args, id)
+	}
+
+	res, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		log.Println("ここでエラー2")
 		return err
+	}
+
+	delete_rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	log.Println(delete_rows)
+	if delete_rows == 0 {
+		log.Println("エラー")
+		return model.ErrNotFound{}
 	}
 
 	return nil
