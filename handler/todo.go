@@ -61,26 +61,44 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		size := r.URL.Query().Get("size")
-		if size == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
+		log.Println(size)
+		// if size == "" {
+		// 	w.WriteHeader(http.StatusBadRequest)
+		// 	return
+		// }
+		// size64 := int64(5)
+		// size64, err := strconv.ParseInt(size, 10, 64)
+		// if err != nil {
+		// 	w.WriteHeader(http.StatusBadRequest)
+		// 	return
+		// }
+		// if size == "" {
+		// 	w.WriteHeader(http.StatusBadRequest)
+		// 	return
+		// }
+		var err error
+		size64 := int64(5)
+		if size != "" {
+			size64, err = strconv.ParseInt(size, 10, 64)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
 		}
-		size64, err := strconv.ParseInt(size, 10, 64)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+
+		// if size64 == 0 {
+		// 	size64 = 5
+		// }
 
 		prevId := r.URL.Query().Get("prev_id")
 		prevId64 := int64(0)
 		if prevId != "" {
 			prevId64, err = strconv.ParseInt(prevId, 10, 64)
+			if err != nil {
+				log.Println(err)
+				return
+			}
 		}
-
-		if err != nil {
-			return
-		}
-
 		request := &model.ReadTODORequest{Size: size64, PrevID: prevId64}
 
 		response, err := h.Read(r.Context(), request)

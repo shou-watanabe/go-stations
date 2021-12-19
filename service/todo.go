@@ -88,7 +88,7 @@ func (s *TODOService) ReadTODO(ctx context.Context, prevID, size int64) ([]*mode
 		}
 	}
 
-	var todos []*model.TODO
+	todos := make([]*model.TODO, 0)
 	for rows.Next() {
 		todo := &model.TODO{}
 
@@ -117,9 +117,16 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, subject, description, id)
+	res, err := stmt.ExecContext(ctx, subject, description, id)
 	if err != nil {
 		return nil, err
+	}
+	update_result, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if update_result == 0 {
+		return nil, &model.ErrNotFound{}
 	}
 
 	t := &model.TODO{ID: id}
@@ -131,7 +138,7 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 
 	row := stmt.QueryRowContext(ctx, id)
 	if err = row.Scan(&t.Subject, &t.Description, &t.CreatedAt, &t.UpdatedAt); err != nil {
-		return nil, &model.ErrNotFound{}
+		return nil, err
 	}
 
 	return t, nil
