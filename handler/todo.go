@@ -53,7 +53,9 @@ func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) 
 
 // Delete handles the endpoint that deletes the TODOs.
 func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) (*model.DeleteTODOResponse, error) {
-	_ = h.svc.DeleteTODO(ctx, nil)
+	if err := h.svc.DeleteTODO(ctx, req.IDs); err != nil {
+		return nil, err
+	}
 	return &model.DeleteTODOResponse{}, nil
 }
 
@@ -188,6 +190,41 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+	case http.MethodDelete:
+		decoder := json.NewDecoder(r.Body)
+		var request model.DeleteTODORequest
+		err := decoder.Decode(&request)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		response, err := h.Delete(r.Context(), &request)
+
+		switch err {
+		case nil:
+			break
+		case model.ErrNotFound{}:
+			log.Println(err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		default:
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		je := json.NewEncoder(w)
+
+		if err := je.Encode(response); err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
