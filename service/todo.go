@@ -179,7 +179,6 @@ func (s *TODOService) DeleteTODO(ctx context.Context, ids []int64) error {
 	}
 	log.Println(delete_rows)
 	if delete_rows == 0 {
-		log.Println("エラー")
 		return model.ErrNotFound{}
 	}
 

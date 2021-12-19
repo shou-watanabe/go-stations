@@ -64,20 +64,6 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		size := r.URL.Query().Get("size")
 		log.Println(size)
-		// if size == "" {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
-		// size64 := int64(5)
-		// size64, err := strconv.ParseInt(size, 10, 64)
-		// if err != nil {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
-		// if size == "" {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
 		var err error
 		size64 := int64(5)
 		if size != "" {
@@ -87,10 +73,6 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
-		// if size64 == 0 {
-		// 	size64 = 5
-		// }
 
 		prevId := r.URL.Query().Get("prev_id")
 		prevId64 := int64(0)
